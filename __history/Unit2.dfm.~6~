@@ -1,0 +1,279 @@
+object Form2: TForm2
+  Left = 0
+  Top = 0
+  AutoSize = True
+  Caption = 'HW4: Infix Prefix Postfix'
+  ClientHeight = 562
+  ClientWidth = 612
+  Color = clBtnFace
+  Font.Charset = DEFAULT_CHARSET
+  Font.Color = clWindowText
+  Font.Height = -12
+  Font.Name = 'Segoe UI'
+  Font.Style = []
+  Position = poScreenCenter
+  TextHeight = 15
+  object pg1: TPageControl
+    Left = 0
+    Top = 0
+    Width = 612
+    Height = 185
+    ActivePage = tsInfix
+    MultiLine = True
+    TabOrder = 0
+    object tsInfix: TTabSheet
+      Caption = 'Infix'
+      object lblInfix: TLabel
+        Left = 75
+        Top = 122
+        Width = 44
+        Height = 15
+        Caption = 'Example'
+      end
+      object lbl1: TLabel
+        Left = 0
+        Top = 3
+        Width = 273
+        Height = 15
+        Caption = 'Only binary operators in {+,-,*,/,^,&,|} are considered.'
+        Color = clWhite
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clRed
+        Font.Height = -12
+        Font.Name = 'Segoe UI'
+        Font.Style = []
+        ParentColor = False
+        ParentFont = False
+      end
+      object btnInfixToPrefix: TButton
+        Left = 19
+        Top = 47
+        Width = 100
+        Height = 25
+        Caption = 'Infix -> Prefix'
+        TabOrder = 0
+      end
+      object btnInfixToPostfix: TButton
+        Left = 19
+        Top = 84
+        Width = 100
+        Height = 25
+        Caption = 'Infix -> Postfix'
+        TabOrder = 1
+      end
+      object editInfix: TEdit
+        Left = 137
+        Top = 11
+        Width = 400
+        Height = 23
+        TabOrder = 2
+        TextHint = 'Input Infix Here'
+      end
+      object editInfixToPrefix: TEdit
+        Left = 137
+        Top = 48
+        Width = 400
+        Height = 23
+        TabOrder = 3
+        Text = 'Edit1'
+      end
+      object editInfixToPostfix: TEdit
+        Left = 137
+        Top = 85
+        Width = 400
+        Height = 23
+        TabOrder = 4
+        Text = 'Edit1'
+      end
+      object cbInfixExample: TComboBox
+        Left = 137
+        Top = 122
+        Width = 400
+        Height = 23
+        TabOrder = 5
+        Text = 'cbInfixExample'
+      end
+    end
+    object txPrefix: TTabSheet
+      Caption = 'Prefix'
+      ImageIndex = 1
+      object lblPrefix: TLabel
+        Left = 75
+        Top = 122
+        Width = 44
+        Height = 15
+        Caption = 'Example'
+      end
+      object editPrefix: TEdit
+        Left = 137
+        Top = 11
+        Width = 400
+        Height = 23
+        TabOrder = 0
+        TextHint = 'Input Prefix Here'
+      end
+      object btnPrefixToInfix: TButton
+        Left = 19
+        Top = 84
+        Width = 100
+        Height = 25
+        Caption = 'Prefix -> Infix'
+        TabOrder = 1
+      end
+      object editPrefixToInfix: TEdit
+        Left = 137
+        Top = 85
+        Width = 400
+        Height = 23
+        ReadOnly = True
+        TabOrder = 2
+      end
+      object cbPrefixEample: TComboBox
+        Left = 137
+        Top = 119
+        Width = 400
+        Height = 23
+        TabOrder = 3
+        Text = 'cbExample'
+      end
+      object btnPrefixToPostfix: TButton
+        Left = 19
+        Top = 47
+        Width = 100
+        Height = 25
+        Caption = 'Prefix -> Postfix'
+        TabOrder = 4
+      end
+      object editPrefixToPostfix: TEdit
+        Left = 137
+        Top = 48
+        Width = 400
+        Height = 23
+        ReadOnly = True
+        TabOrder = 5
+      end
+    end
+    object tsPostfix: TTabSheet
+      Caption = 'Postfix'
+      ImageIndex = 2
+      object lblPostfix: TLabel
+        Left = 75
+        Top = 122
+        Width = 44
+        Height = 15
+        Caption = 'Example'
+      end
+      object editPostfixToInfix: TEdit
+        Left = 137
+        Top = 85
+        Width = 400
+        Height = 23
+        ReadOnly = True
+        TabOrder = 0
+      end
+      object btnPostfixToInfix: TButton
+        Left = 19
+        Top = 84
+        Width = 100
+        Height = 25
+        Caption = 'Postfix -> Infix'
+        TabOrder = 1
+      end
+      object editPostfix: TEdit
+        Left = 137
+        Top = 11
+        Width = 400
+        Height = 23
+        TabOrder = 2
+        TextHint = 'Input Postfix Here'
+      end
+      object cbPostfixExample: TComboBox
+        Left = 137
+        Top = 122
+        Width = 400
+        Height = 23
+        TabOrder = 3
+        Text = 'cbExample'
+      end
+      object btnPostfixToPrefix: TButton
+        Left = 19
+        Top = 47
+        Width = 100
+        Height = 25
+        Caption = 'Postfix -> Prefix'
+        TabOrder = 4
+      end
+      object editPostfixToPrefix: TEdit
+        Left = 137
+        Top = 48
+        Width = 400
+        Height = 23
+        ReadOnly = True
+        TabOrder = 5
+      end
+    end
+  end
+  object cbPrintStack: TCheckBox
+    Left = 8
+    Top = 221
+    Width = 97
+    Height = 17
+    Caption = 'Print stack'
+    TabOrder = 1
+  end
+  object cbPrintTracing: TCheckBox
+    Left = 137
+    Top = 221
+    Width = 97
+    Height = 17
+    Caption = 'Print tracing'
+    TabOrder = 2
+  end
+  object pg2: TPageControl
+    Left = 0
+    Top = 244
+    Width = 612
+    Height = 318
+    ActivePage = tsTracing
+    MultiLine = True
+    TabOrder = 3
+    TabPosition = tpRight
+    object tsTracing: TTabSheet
+      Caption = 'Tracing'
+      object reOutput: TRichEdit
+        Left = 3
+        Top = 3
+        Width = 575
+        Height = 304
+        Font.Charset = GB2312_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -12
+        Font.Name = 'Segoe UI'
+        Font.Style = []
+        Lines.Strings = (
+          'reOutput')
+        ParentFont = False
+        TabOrder = 0
+      end
+    end
+    object tsAuthor: TTabSheet
+      Caption = 'Author'
+      ImageIndex = 1
+      object reAuthor: TRichEdit
+        Left = 3
+        Top = 3
+        Width = 575
+        Height = 304
+        Font.Charset = GB2312_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -12
+        Font.Name = 'Segoe UI'
+        Font.Style = []
+        Lines.Strings = (
+          'reAuthor')
+        ParentFont = False
+        TabOrder = 0
+      end
+    end
+  end
+end
