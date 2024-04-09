@@ -5,6 +5,8 @@
 
 #include "Unit2.h"
 
+#include <System.Classes.hpp> // For TThread
+
 #include <algorithm>
 #include <cctype>
 #include <cassert>
@@ -12,7 +14,6 @@
 #include <string>
 #include <stack>
 #include <cmath>
-
 using namespace std;
 
 //---------------------------------------------------------------------------
@@ -40,10 +41,22 @@ void __fastcall TForm2::cbPrintTracingClick(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
-void __fastcall TForm2::AppendTextToOutput(const String &text)
-{
-
+// Function to convert UnicodeString (or TCaption) to std::string
+std::string UnicodeToString(const System::UnicodeString& unicodeStr) {
+	AnsiString ansiStr = unicodeStr; // Convert from UnicodeString to AnsiString
+	return std::string(ansiStr.c_str()); // Convert from AnsiString to std::string and return
 }
+
+// Function to convert std::string to UnicodeString (or TCaption)
+System::UnicodeString StringToUnicode(const std::string& stdStr) {
+	return System::UnicodeString(stdStr.c_str());
+}
+
+// Original PrintLog method that accepts System::String
+void __fastcall TForm2::PrintLog(const String &text) {
+	reOutput->Text += text + "\n";
+}
+
 
 // Utility function to perform an arithmetic or bitwise operation
 int __fastcall TForm2::performOperation(char operation, int operand1, int operand2) {
@@ -67,7 +80,6 @@ int __fastcall TForm2::performOperation(char operation, int operand1, int operan
         return -1;
     }
 }
-
 // Utility Functions
 inline bool __fastcall TForm2::isOperand(char c) { return isalnum(c); }
 inline bool __fastcall TForm2::isOperator(char c) { return c == '+' || c == '-' || c == '*' || c == '/' || c == '^' || c == '&' || c == '|'; }
@@ -82,52 +94,121 @@ inline int __fastcall TForm2::precedence(char op) {
         return 0; // Adjusted to fit bitwise operators at the lowest precedence
     return -1; // Error case
 }
-
 // Function to reverse the infix expression for infix to prefix conversion
 inline std::string __fastcall TForm2::reverseExpression(const string& expr) {
-    string reversed;
-    reversed.reserve(expr.length());
-    for (int i = expr.length() - 1; i >= 0; i--) {
-        if (expr[i] == '(')
-            reversed += ')';
-        else if (expr[i] == ')')
-            reversed += '(';
-        else
-            reversed += expr[i];
-    }
-    return reversed;
+	string reversed;
+	reversed.reserve(expr.length());
+
+    if (printTracing) {
+        PrintLog("Original Expression: " + String(expr.c_str()));
+        PrintLog("Reversing process starts");
+	}
+
+	for (int i = expr.length() - 1; i >= 0; i--) {
+		if (expr[i] == '(')
+			reversed += ')';
+		else if (expr[i] == ')')
+			reversed += '(';
+		else
+			reversed += expr[i];
+
+		if (printTracing) {
+			PrintLog("Processed: " + StringToUnicode(string(1, expr[i])));
+            PrintLog("Reversed Expression so far: " + String(reversed.c_str()));
+		}
+	}
+
+    if (printTracing) {
+        PrintLog("Reversed Expression: " + String(reversed.c_str()));
+	}
+
+	return reversed;
 }
+
+
+// Utility function to get the content of the stack as a string
+string stackContent(const stack<char>& s) {
+	string content;
+	stack<char> temp(s);
+	while (!temp.empty()) {
+		content = temp.top() + content;
+		temp.pop();
+	}
+	return content;
+}
+
+string stackContent(const stack<string>& s) {
+	string content;
+	stack<string> temp(s);
+	while (!temp.empty()) {
+		content = temp.top() + content;
+		temp.pop();
+	}
+	return content;
+}
+
 
 // Function to convert infix expression to postfix
 string __fastcall TForm2::InfixToPostfix(const string& infix) {
     string postfix;
     postfix.reserve(infix.length());
-    stack<char> operatorStack;
+	stack<char> operatorStack;
+
+	if (printTracing) {
+		PrintLog("Convert Infix expression to Postfix");
+		PrintLog("Stack 1 => ");
+		PrintLog("Stack 2 => ");
+	}
 
     for (char c : infix) {
         if (isdigit(c) || isalpha(c)) {
-            postfix += c;
+			postfix += c;
+            if (printStack) {
+				PrintLog("Stack 1 => " + StringToUnicode(postfix));
+				PrintLog("Stack 2 => " + StringToUnicode(stackContent(operatorStack)));
+			}
         } else if (c == '(') {
             operatorStack.push(c);
         } else if (c == ')') {
             while (!operatorStack.empty() && operatorStack.top() != '(') {
                 postfix += operatorStack.top();
-                operatorStack.pop();
+				operatorStack.pop();
+                if (printStack) {
+					PrintLog("Stack 1 => " + StringToUnicode(postfix));
+					PrintLog("Stack 2 => " + StringToUnicode(stackContent(operatorStack)));
+				}
             }
             if (!operatorStack.empty())
                 operatorStack.pop();
         } else if (isOperator(c)) {
             while (!operatorStack.empty() && precedence(c) <= precedence(operatorStack.top())) {
                 postfix += operatorStack.top();
-                operatorStack.pop();
+				operatorStack.pop();
+                if (printStack) {
+					PrintLog("Stack 1 => " + StringToUnicode(postfix));
+					PrintLog("Stack 2 => " + StringToUnicode(stackContent(operatorStack)));
+				}
             }
             operatorStack.push(c);
-        }
+		}
+        if (printTracing) {
+            // Log the tracing info after processing each character
+            PrintLog("Processed: " + StringToUnicode(string(1, c)));
+		}
     }
 
     while (!operatorStack.empty()) {
         postfix += operatorStack.top();
-        operatorStack.pop();
+		operatorStack.pop();
+        if (printStack) {
+			PrintLog("Stack 1 => " + StringToUnicode(postfix));
+			PrintLog("Stack 2 => " + StringToUnicode(stackContent(operatorStack)));
+		}
+	}
+
+    if (printTracing) {
+		PrintLog("Infix: " + StringToUnicode(infix));
+        PrintLog("Postfix: " + StringToUnicode(postfix));
     }
 
     return postfix;
@@ -135,140 +216,128 @@ string __fastcall TForm2::InfixToPostfix(const string& infix) {
 
 // Function to convert infix expression to prefix
 string __fastcall TForm2::InfixToPrefix(const string& infix) {
+
+	if (printTracing) {
+		PrintLog("Convert Infix expression to Prefix");
+	}
+
 	return reverseExpression(InfixToPostfix(reverseExpression(infix)));
 }
 
 string __fastcall TForm2::PostfixToInfix(const string& postfix) {
-    stack<string> s;
+	stack<string> s;
+
+	if (printTracing) {
+		PrintLog("Convert Postfix expression to Infix");
+		PrintLog("Initial stack state: ");
+	}
 
     for (char c : postfix) {
         if (isOperand(c)) {
-            s.emplace(1, c);
-        } else {
+			s.emplace(1, c);
+
+			if (printTracing) {
+				PrintLog("Pushed operand '" + StringToUnicode(string(1, c)) + "' onto the stack.");
+			}
+
+		} else {
+			if (s.size() < 2) {
+				PrintLog("Error: insufficient operands in the expression for operator '" + StringToUnicode(string(1, c)) + "'.");
+				return "";
+			}
+
             string op1 = s.top();
             s.pop();
             string op2 = s.top();
             s.pop();
-            s.emplace("(" + op2 + c + op1 + ")");
-        }
-    }
+			s.emplace("(" + op2 + c + op1 + ")");
+
+			if (printTracing) {
+				PrintLog("Applied operator '" + StringToUnicode(string(1, c)) + "' to operands: '" + String(op2.c_str()) + "' and '" + String(op1.c_str()) + "'");
+				PrintLog("Current stack top after operation: " + String(s.top().c_str()));
+			}
+		}
+
+		if (printStack) {
+			PrintLog("Stack content: " + StringToUnicode(stackContent(s)));
+		}
+	}
+
+	if (printTracing) {
+		PrintLog("Final infix expression: " + String(s.top().c_str()));
+	}
 
     return s.top();
 }
 
 string __fastcall TForm2::PostfixToPrefix(const string& postfix) {
-    stack<string> s;
+	if (printTracing) {
+		PrintLog("Convert Postfix expression to Prefix");
+	}
 
-    for (char c : postfix) {
-        if (isOperand(c)) {
-            s.emplace(1, c);
-        } else {
-            string op1 = s.top();
-            s.pop();
-            string op2 = s.top();
-            s.pop();
-            s.emplace(c + op2 + op1);
-        }
-    }
+	string infix = PostfixToInfix(postfix);
 
-    return s.top();
+	return InfixToPrefix(infix);
 }
 
 string __fastcall TForm2::PrefixToInfix(const string& prefix) {
-    stack<string> s;
+	stack<string> s;
 
-    for (int i = prefix.length() - 1; i >= 0; i--) {
-        if (isOperand(prefix[i])) {
-            s.emplace(1, prefix[i]);
-        } else {
-            string op1 = s.top();
-            s.pop();
-            string op2 = s.top();
-            s.pop();
-            s.emplace("(" + op1 + prefix[i] + op2 + ")");
-        }
-    }
+	if (printTracing) {
+		PrintLog("Convert Prefix expression to Infix");
+		PrintLog("Initial stack state: ");
+	}
+
+	for (int i = prefix.length() - 1; i >= 0; i--) {
+		if (isOperand(prefix[i])) {
+			s.emplace(1, prefix[i]);
+
+            if (printTracing) {
+				PrintLog("Pushed operand '" + StringToUnicode(string(1, prefix[i])) + "' onto the stack.");
+			}
+		} else {
+            if (s.size() < 2) {
+				PrintLog("Error: insufficient operands in the expression for operator '" + StringToUnicode(string(1, prefix[i])) + "'.");
+				return "";
+			}
+
+			string op1 = s.top();
+			s.pop();
+			string op2 = s.top();
+			s.pop();
+			s.emplace("(" + op1 + prefix[i] + op2 + ")");
+
+            if (printTracing) {
+				PrintLog("Applied operator '" + StringToUnicode(string(1, prefix[i])) + "' to operands: '" + String(op2.c_str()) + "' and '" + String(op1.c_str()) + "'");
+				PrintLog("Current stack top after operation: " + String(s.top().c_str()));
+			}
+		}
+
+        if (printStack) {
+			PrintLog("Stack content: " + StringToUnicode(stackContent(s)));
+		}
+	}
+
+    if (printTracing) {
+		PrintLog("Final infix expression: " + String(s.top().c_str()));
+	}
 
     return s.top();
 }
 
 string __fastcall TForm2::PrefixToPostfix(const string& prefix) {
-    stack<string> s;
+    if (printTracing) {
+		PrintLog("Convert Prefix expression to Infix");
+	}
 
-    for (int i = prefix.length() - 1; i >= 0; i--) {
-        if (isOperand(prefix[i])) {
-            s.emplace(1, prefix[i]);
-        } else {
-            string op1 = s.top();
-            s.pop();
-            string op2 = s.top();
-            s.pop();
-            s.emplace(op1 + op2 + prefix[i]);
-        }
-    }
+	string infix = PrefixToInfix(prefix);
 
-	return s.top();
-}
-
-// Function to evaluate a postfix expression
-int __fastcall TForm2::evaluatePostfix(const string& postfix) {
-    stack<int> operandStack;
-
-    for (char c : postfix) {
-        if (isdigit(c)) {
-            operandStack.emplace(c - '0');
-        } else if (isOperator(c)) {
-            int op2 = operandStack.top();
-            operandStack.pop();
-            int op1 = operandStack.top();
-            operandStack.pop();
-            int result = performOperation(c, op1, op2);
-            operandStack.emplace(result);
-        }
-    }
-
-    return operandStack.top();
-}
-
-// Function to evaluate a prefix expression
-int __fastcall TForm2::evaluatePrefix(const string& prefix) {
-    stack<int> operandStack;
-
-    for (int i = prefix.length() - 1; i >= 0; --i) {
-        char c = prefix[i];
-        if (isdigit(c)) {
-            operandStack.emplace(c - '0');
-        } else if (isOperator(c)) {
-            int op1 = operandStack.top();
-            operandStack.pop();
-            int op2 = operandStack.top();
-            operandStack.pop();
-            int result = performOperation(c, op1, op2);
-            operandStack.emplace(result);
-        }
-    }
-
-    return operandStack.top();
-}
-
-// Function to evaluate an infix expression
-int __fastcall TForm2::evaluateInfix(const string& infix) {
-	return evaluatePostfix(InfixToPostfix(infix));
-}
-
-// Function to convert UnicodeString (or TCaption) to std::string
-std::string UnicodeToString(const System::UnicodeString& unicodeStr) {
-    AnsiString ansiStr = unicodeStr; // Convert from UnicodeString to AnsiString
-    return std::string(ansiStr.c_str()); // Convert from AnsiString to std::string and return
-}
-
-// Function to convert std::string to UnicodeString (or TCaption)
-System::UnicodeString StringToUnicode(const std::string& stdStr) {
-    return System::UnicodeString(stdStr.c_str());
+	return InfixToPostfix(infix);
 }
 
 void __fastcall TForm2::btnInfixToPrefixClick(TObject *Sender)
 {
+    if(editInfix->Text.Length() == 0) ShowMessage("Please input an expression");
 	if(printStack || printTracing) reOutput->Clear();
 	std::string text = UnicodeToString(editInfix->Text);
 	text = InfixToPrefix(text);
@@ -277,6 +346,7 @@ void __fastcall TForm2::btnInfixToPrefixClick(TObject *Sender)
 //---------------------------------------------------------------------------
 void __fastcall TForm2::btnInfixToPostfixClick(TObject *Sender)
 {
+	if(editInfix->Text.Length() == 0) ShowMessage("Please input an expression");
 	if(printStack || printTracing) reOutput->Clear();
 	std::string text = UnicodeToString(editInfix->Text);
 	text = InfixToPostfix(text);
@@ -285,6 +355,7 @@ void __fastcall TForm2::btnInfixToPostfixClick(TObject *Sender)
 //---------------------------------------------------------------------------
 void __fastcall TForm2::btnPrefixToPostfixClick(TObject *Sender)
 {
+	if(editPrefix->Text.Length() == 0) ShowMessage("Please input an expression");
 	if(printStack || printTracing) reOutput->Clear();
 	std::string text = UnicodeToString(editPrefix->Text);
 	text = PrefixToPostfix(text);
@@ -293,6 +364,7 @@ void __fastcall TForm2::btnPrefixToPostfixClick(TObject *Sender)
 //---------------------------------------------------------------------------
 void __fastcall TForm2::btnPrefixToInfixClick(TObject *Sender)
 {
+	if(editPrefix->Text.Length() == 0) ShowMessage("Please input an expression");
 	if(printStack || printTracing) reOutput->Clear();
 	std::string text = UnicodeToString(editPrefix->Text);
 	text = PrefixToInfix(text);
@@ -301,6 +373,7 @@ void __fastcall TForm2::btnPrefixToInfixClick(TObject *Sender)
 //---------------------------------------------------------------------------
 void __fastcall TForm2::btnPostfixToPrefixClick(TObject *Sender)
 {
+	if(editPostfix->Text.Length() == 0) ShowMessage("Please input an expression");
 	if(printStack || printTracing) reOutput->Clear();
 	std::string text = UnicodeToString(editPostfix->Text);
 	text = PostfixToPrefix(text);
@@ -309,7 +382,8 @@ void __fastcall TForm2::btnPostfixToPrefixClick(TObject *Sender)
 //---------------------------------------------------------------------------
 void __fastcall TForm2::btnPostfixToInfixClick(TObject *Sender)
 {
-    if(printStack || printTracing) reOutput->Clear();
+	if(editPostfix->Text.Length() == 0) ShowMessage("Please input an expression");
+	if(printStack || printTracing) reOutput->Clear();
 	std::string text = UnicodeToString(editPostfix->Text);
 	text = PostfixToInfix(text);
 	editPostfixToInfix->Text = StringToUnicode(text);
